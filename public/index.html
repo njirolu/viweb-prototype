@@ -6,57 +6,8 @@
     <title>WebContainer Workspace</title>
     <link rel="stylesheet" href="/webcontainer-runner/runner.css" />
   </head>
-  <body data-mobile-panel="editor">
-    <main class="workspace-shell">
-      <header class="workspace-header">
-        <div class="title-block">
-          <h1>WebContainer Workspace</h1>
-          <p>Frontend, backend, and terminal running fully inside WebContainer.</p>
-        </div>
-        <div class="header-actions">
-          <button type="button" id="saveBtn" class="secondary">Save (Ctrl/Cmd+S)</button>
-          <button type="button" id="restartBtn" class="primary">Restart Dev Server</button>
-        </div>
-      </header>
-
-      <div class="status-row">
-        <p id="status" class="status">Initializing...</p>
-        <p id="compatibility" class="compatibility"></p>
-      </div>
-
-      <nav class="mobile-nav" id="mobileNav" aria-label="Workspace panels">
-        <button type="button" data-panel="files" class="mobile-tab">Files</button>
-        <button type="button" data-panel="editor" class="mobile-tab active">Editor</button>
-        <button type="button" data-panel="preview" class="mobile-tab">Preview</button>
-        <button type="button" data-panel="terminal" class="mobile-tab">Terminal</button>
-      </nav>
-
-      <section class="workspace-grid">
-        <aside class="pane sidebar-pane" data-panel="files">
-          <div class="pane-title">Explorer</div>
-          <div class="explorer-root">workspace</div>
-          <div id="fileTree" class="file-tree"></div>
-        </aside>
-
-        <section class="pane editor-pane" data-panel="editor">
-          <div id="editorTabs" class="editor-tabs"></div>
-          <div id="editorContainer" class="editor-container"></div>
-        </section>
-
-        <section class="pane right-pane">
-          <article class="subpane preview-pane" data-panel="preview">
-            <div class="pane-title">Preview</div>
-            <iframe id="preview" title="WebContainer preview"></iframe>
-          </article>
-
-          <article class="subpane terminal-pane" data-panel="terminal">
-            <div class="pane-title">Terminal</div>
-            <div id="terminal" class="terminal-container"></div>
-          </article>
-        </section>
-      </section>
-    </main>
-
+  <body>
+    <div id="root" data-runner-shell="react"></div>
     <script type="module" src="/webcontainer-runner/runner.js"></script>
   </body>
 </html>

@@ -2,6 +2,10 @@
 
 Container-only notes app: frontend + backend berjalan di dalam WebContainer preview.
 
+Frontend stack:
+- `frontend/runner`: Vite + React + TypeScript + Tailwind + shadcn
+- `frontend/notes`: Vite + React + TypeScript + Tailwind + shadcn
+
 ## Arsitektur
 
 - Host server (`npm run dev`) hanya sebagai launcher runner.
@@ -40,7 +44,7 @@ Buka `http://localhost:3000/` lalu jalankan app melalui preview iframe WebContai
 1. Boot `@webcontainer/api`
 2. Mount snapshot project runtime
 3. Jalankan `npm install`
-4. Jalankan `npm run dev` dengan `WEB_CONTAINER_TARGET=1`
+4. Jalankan `npm run dev:container` (Express API + Vite Notes dev server di port 4173)
 5. Buka URL preview dari WebContainer
 
 Runner UI berbentuk workspace mirip VSCode:
@@ -57,7 +61,8 @@ npm run build:runner
 
 Perintah ini akan:
 
-- regenerate `webcontainer-runner/src/generated-files.js`
+- rebuild `public/app.js` + `public/styles.css` (Notes React bundle)
+- regenerate `frontend/runner/src/generated-files.ts`
 - rebuild `public/webcontainer-runner/runner.js`
 - rebuild `public/webcontainer-runner/runner.css`
 

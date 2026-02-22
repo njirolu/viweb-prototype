@@ -32,6 +32,7 @@ test.after(async () => {
 test('GET / serves the WebContainer runner HTML with isolation headers', async () => {
   const response = await request(hostApp).get('/').expect(200);
 
+  assert.match(response.text, /data-runner-shell="react"/);
   assert.match(response.text, /WebContainer Workspace/);
   assert.equal(response.headers['cross-origin-opener-policy'], 'same-origin');
   assert.equal(response.headers['cross-origin-embedder-policy'], 'require-corp');
@@ -57,6 +58,7 @@ test('GET /notes-ui is not available in host mode and redirects to /', async () 
 test('GET / serves container app in WEB_CONTAINER_TARGET mode', async () => {
   const response = await request(containerApp).get('/').expect(200);
 
+  assert.match(response.text, /data-notes-shell="react"/);
   assert.match(response.text, /Notes API v1 Demo/);
   assert.equal(response.headers['cross-origin-opener-policy'], undefined);
   assert.equal(response.headers['cross-origin-embedder-policy'], undefined);
