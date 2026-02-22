@@ -3,49 +3,60 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Notes API v1 Demo</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <title>WebContainer Workspace</title>
+    <link rel="stylesheet" href="/webcontainer-runner/runner.css" />
   </head>
-  <body>
-    <main class="container">
-      <header>
-        <h1>Notes API v1 Demo</h1>
-        <p>Express + SQLite (WASM) in WebContainer</p>
+  <body data-mobile-panel="editor">
+    <main class="workspace-shell">
+      <header class="workspace-header">
+        <div class="title-block">
+          <h1>WebContainer Workspace</h1>
+          <p>Frontend, backend, and terminal running fully inside WebContainer.</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" id="saveBtn" class="secondary">Save (Ctrl/Cmd+S)</button>
+          <button type="button" id="restartBtn" class="primary">Restart Dev Server</button>
+        </div>
       </header>
 
-      <section class="card">
-        <h2 id="formTitle">Create note</h2>
-        <form id="noteForm">
-          <input type="hidden" id="noteId" />
+      <div class="status-row">
+        <p id="status" class="status">Initializing...</p>
+        <p id="compatibility" class="compatibility"></p>
+      </div>
 
-          <label for="title">Title</label>
-          <input id="title" name="title" maxlength="120" required />
+      <nav class="mobile-nav" id="mobileNav" aria-label="Workspace panels">
+        <button type="button" data-panel="files" class="mobile-tab">Files</button>
+        <button type="button" data-panel="editor" class="mobile-tab active">Editor</button>
+        <button type="button" data-panel="preview" class="mobile-tab">Preview</button>
+        <button type="button" data-panel="terminal" class="mobile-tab">Terminal</button>
+      </nav>
 
-          <label for="content">Content</label>
-          <textarea id="content" name="content" rows="4"></textarea>
+      <section class="workspace-grid">
+        <aside class="pane sidebar-pane" data-panel="files">
+          <div class="pane-title">Explorer</div>
+          <div class="explorer-root">workspace</div>
+          <div id="fileTree" class="file-tree"></div>
+        </aside>
 
-          <div class="actions">
-            <button type="submit" id="saveButton">Save</button>
-            <button type="button" id="cancelButton" class="secondary hidden">Cancel edit</button>
-          </div>
-        </form>
-      </section>
+        <section class="pane editor-pane" data-panel="editor">
+          <div id="editorTabs" class="editor-tabs"></div>
+          <div id="editorContainer" class="editor-container"></div>
+        </section>
 
-      <section class="card">
-        <div class="toolbar">
-          <h2>Notes</h2>
-          <input id="search" placeholder="Search title/content..." />
-        </div>
-        <p id="status" class="status"></p>
-        <ul id="notesList" class="notes"></ul>
-        <div class="pagination" id="pagination">
-          <button type="button" id="prevPage" class="secondary">Previous</button>
-          <span id="pageInfo">Page 1 of 1</span>
-          <button type="button" id="nextPage" class="secondary">Next</button>
-        </div>
+        <section class="pane right-pane">
+          <article class="subpane preview-pane" data-panel="preview">
+            <div class="pane-title">Preview</div>
+            <iframe id="preview" title="WebContainer preview"></iframe>
+          </article>
+
+          <article class="subpane terminal-pane" data-panel="terminal">
+            <div class="pane-title">Terminal</div>
+            <div id="terminal" class="terminal-container"></div>
+          </article>
+        </section>
       </section>
     </main>
 
-    <script src="/app.js"></script>
+    <script type="module" src="/webcontainer-runner/runner.js"></script>
   </body>
 </html>

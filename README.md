@@ -1,36 +1,23 @@
 # be-wasm
 
-Express backend API with SQLite (WASM via `sql.js`) and vanilla frontend demo.
+Container-only notes app: frontend + backend berjalan di dalam WebContainer preview.
 
-## Features
+## Arsitektur
 
-- Versioned REST API at `/api/v1`
-- JSON:API request/response format
-- Notes CRUD with search and offset pagination
-- SQLite-compatible storage using WASM (`sql.js`)
-- File persistence in `data/app.db`
-- Static frontend served by the same Express server
+- Host server (`npm run dev`) hanya sebagai launcher runner.
+- App bisnis (UI notes + REST API + DB) hanya aktif saat `WEB_CONTAINER_TARGET=1` di dalam WebContainer.
+- Host tidak mengekspos direct UI app atau API bisnis.
 
-## Run
+## Host Routes (non-container)
 
-```bash
-npm install
-npm run dev
-```
+- `GET /` -> halaman WebContainer runner
+- `GET /webcontainer-runner/*` -> asset runner
+- `GET /api/v1/*` -> `404 Not Found` (disabled di host)
+- Semua route non-API lain -> redirect ke `/`
 
-Server runs at:
+## Container Runtime Routes (`WEB_CONTAINER_TARGET=1`)
 
-- `http://localhost:3000`
-- In WebContainer, use the preview URL for port `3000`.
-
-## Test
-
-```bash
-npm test
-```
-
-## API v1 Endpoints
-
+- `GET /` -> UI notes app
 - `GET /api/v1/health`
 - `GET /api/v1/notes?page=1&limit=10&search=keyword`
 - `GET /api/v1/notes/:id`
@@ -38,9 +25,50 @@ npm test
 - `PATCH /api/v1/notes/:id`
 - `DELETE /api/v1/notes/:id`
 
-## JSON:API Request Bodies
+## Menjalankan Lokal
 
-### Create note (`POST /api/v1/notes`)
+```bash
+npm install
+npm run build:runner
+npm run dev
+```
+
+Buka `http://localhost:3000/` lalu jalankan app melalui preview iframe WebContainer.
+
+## Alur Runner (`/`)
+
+1. Boot `@webcontainer/api`
+2. Mount snapshot project runtime
+3. Jalankan `npm install`
+4. Jalankan `npm run dev` dengan `WEB_CONTAINER_TARGET=1`
+5. Buka URL preview dari WebContainer
+
+Runner UI berbentuk workspace mirip VSCode:
+- kiri: file tree (live dari filesystem WebContainer)
+- tengah: editor Monaco (multi-tab dasar, simpan `Ctrl/Cmd+S`)
+- kanan atas: web preview
+- kanan bawah: terminal interaktif (xterm)
+
+## Build Runner Assets
+
+```bash
+npm run build:runner
+```
+
+Perintah ini akan:
+
+- regenerate `webcontainer-runner/src/generated-files.js`
+- rebuild `public/webcontainer-runner/runner.js`
+- rebuild `public/webcontainer-runner/runner.css`
+
+## Browser Requirements
+
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Embedder-Policy: require-corp`
+- `SharedArrayBuffer` tersedia
+- HTTPS atau localhost
+
+## API Request Body (Create/Patch)
 
 ```json
 {
@@ -54,96 +82,14 @@ npm test
 }
 ```
 
-### Patch note (`PATCH /api/v1/notes/:id`)
+## Troubleshooting
 
-```json
-{
-  "data": {
-    "type": "notes",
-    "attributes": {
-      "content": "Updated content"
-    }
-  }
-}
+- Jika runner gagal start, cek panel terminal log di halaman runner.
+- Jika asset runner hilang, jalankan `npm run build:runner`.
+- Jika compatibility gagal, pastikan berjalan di localhost/HTTPS dengan COOP/COEP aktif.
+
+## Test
+
+```bash
+npm test
 ```
-
-## Response Examples
-
-### Success (single resource)
-
-```json
-{
-  "jsonapi": { "version": "1.0" },
-  "data": {
-    "type": "notes",
-    "id": "1",
-    "attributes": {
-      "title": "My note",
-      "content": "Optional content",
-      "createdAt": "2026-02-22T00:00:00.000Z",
-      "updatedAt": "2026-02-22T00:00:00.000Z"
-    }
-  }
-}
-```
-
-### Success (list + pagination meta)
-
-```json
-{
-  "jsonapi": { "version": "1.0" },
-  "data": [
-    {
-      "type": "notes",
-      "id": "1",
-      "attributes": {
-        "title": "My note",
-        "content": "Optional content",
-        "createdAt": "2026-02-22T00:00:00.000Z",
-        "updatedAt": "2026-02-22T00:00:00.000Z"
-      }
-    }
-  ],
-  "meta": {
-    "page": 1,
-    "limit": 10,
-    "total": 1,
-    "totalPages": 1
-  }
-}
-```
-
-### Error
-
-```json
-{
-  "jsonapi": { "version": "1.0" },
-  "errors": [
-    {
-      "status": "400",
-      "code": "TITLE_REQUIRED",
-      "title": "Bad Request",
-      "detail": "Title is required."
-    }
-  ]
-}
-```
-
-## Query Parameters
-
-- `page`: 1-based page index, default `1`
-- `limit`: page size, default `10`, max `100`
-- `search`: case-insensitive keyword filter on title/content
-
-## Breaking Changes from Legacy API
-
-- Base path changed from `/api/*` to `/api/v1/*`
-- `PUT /api/notes/:id` replaced by `PATCH /api/v1/notes/:id`
-- Request and response payloads use JSON:API shape
-- Legacy `/api/notes` endpoints are removed
-
-## Notes
-
-- CORS is configured as `*`.
-- Database file is stored at `data/app.db` and excluded from git.
-- API is intentionally unauthenticated for local/demo use.
