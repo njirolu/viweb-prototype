@@ -5,8 +5,8 @@ const path = require('path');
 process.env.DB_PATH = path.join(process.cwd(), 'data', 'app.test.db');
 
 const request = require('supertest');
-const { createApp } = require('../server/app');
-const notesRepository = require('../server/features/notes/notes.repository');
+const { createApp } = require('../packages/server/app');
+const notesRepository = require('../packages/server/features/notes/notes.repository');
 
 const hostApp = createApp();
 const containerApp = createApp({ webContainerTarget: true });

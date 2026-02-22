@@ -1,7 +1,0 @@
-{
-  "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "types": ["vite/client", "node"]
-  },
-  "include": ["frontend/runner/src", "frontend/shared", "vite.runner.config.ts"]
-}

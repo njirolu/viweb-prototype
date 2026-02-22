@@ -15,7 +15,7 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@shared/*": ["frontend/shared/*"]
+      "@shared/*": ["packages/shared/src/*"]
     }
   }
 }

@@ -3,8 +3,14 @@
 Container-only notes app: frontend + backend berjalan di dalam WebContainer preview.
 
 Frontend stack:
-- `frontend/runner`: Vite + React + TypeScript + Tailwind + shadcn
-- `frontend/notes`: Vite + React + TypeScript + Tailwind + shadcn
+- `app`: Vite + React + TypeScript + Tailwind + shadcn (runner UI)
+- `packages/client`: Vite + React + TypeScript + Tailwind + shadcn (notes UI)
+
+Workspace layout:
+- `app`: WebContainer runner UI + snapshot generator
+- `packages/client`: notes frontend
+- `packages/server`: Express + SQLite API
+- `packages/shared`: shared UI components/utilities/styles
 
 ## Arsitektur
 
@@ -62,7 +68,7 @@ npm run build:runner
 Perintah ini akan:
 
 - rebuild `public/app.js` + `public/styles.css` (Notes React bundle)
-- regenerate `frontend/runner/src/generated-files.ts`
+- regenerate `app/src/generated-files.ts`
 - rebuild `public/webcontainer-runner/runner.js`
 - rebuild `public/webcontainer-runner/runner.css`
 

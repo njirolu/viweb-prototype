@@ -1,0 +1,17 @@
+{
+  "name": "@viweb/server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "dev": "node app.js",
+    "start": "node app.js",
+    "dev:container": "WEB_CONTAINER_TARGET=1 node app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "sql.js": "^1.14.0"
+  }
+}
