@@ -27,17 +27,17 @@ export function EditorTabs({
 
   return (
     <ScrollArea className="h-9 w-full">
-      <div className="inline-flex min-w-full items-stretch bg-muted/40">
+      <div className="inline-flex min-w-full items-stretch bg-[#252526]">
         {tabs.map((tabPath) => {
           const active = tabPath === activePath;
 
           return (
-            <div key={tabPath} className="inline-flex">
+            <div key={tabPath} className={cn("inline-flex border-r border-[#2b2b2b]", active ? "bg-[#1e1e1e]" : "bg-[#2d2d2d]")}>
               <Button
                 variant="ghost"
                 className={cn(
-                  'h-9 rounded-none border-r border-border px-3 font-mono text-xs',
-                  active ? 'bg-background text-foreground' : 'text-muted-foreground hover:text-foreground'
+                  'h-9 rounded-none px-3 font-mono text-xs hover:bg-transparent',
+                  active ? 'text-[#ffffff]' : 'text-[#8a8a8a] hover:text-[#cccccc]'
                 )}
                 onClick={() => onSelectTab(tabPath)}
               >
@@ -47,7 +47,10 @@ export function EditorTabs({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-8 rounded-none border-r border-border text-muted-foreground hover:text-foreground"
+                className={cn(
+                  "h-9 w-8 rounded-none hover:bg-white/10 hover:text-[#cccccc]",
+                  active ? "text-[#cccccc]" : "text-[#8a8a8a]"
+                )}
                 onClick={() => onCloseTab(tabPath)}
                 aria-label={`Close ${basename(tabPath)}`}
               >
