@@ -12,34 +12,22 @@ function setCrossOriginIsolationHeaders(_req, res, next) {
   next();
 }
 
-function createApp(options = {}) {
-  const isWebContainerTarget =
-    options.webContainerTarget ?? process.env.WEB_CONTAINER_TARGET === '1';
-
+function createApp() {
   const app = express();
   const publicDir = path.join(projectRoot, 'public');
+  const distDir = path.join(projectRoot, 'dist');
 
   app.use(cors({ origin: '*' }));
   app.use(express.json());
-
-  if (isWebContainerTarget) {
-    app.use('/api/v1', apiV1Router);
-  } else {
-    app.use('/api/v1', (_req, res) => {
-      return res.status(404).json({ error: 'Not found' });
-    });
-  }
+  app.use('/api/v1', apiV1Router);
 
   app.use(
-    '/webcontainer-runner',
+    '/dist/webcontainer-runner',
     setCrossOriginIsolationHeaders,
-    express.static(path.join(publicDir, 'webcontainer-runner'))
+    express.static(path.join(distDir, 'webcontainer-runner'))
   );
+  app.use('/dist', express.static(distDir));
   app.use(express.static(publicDir, { index: false }));
-
-  function serveContainerApp(_req, res) {
-    return res.sendFile(path.join(publicDir, 'app.html'));
-  }
 
   function serveRunner(_req, res) {
     res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
@@ -47,19 +35,9 @@ function createApp(options = {}) {
     return res.sendFile(path.join(publicDir, 'index.html'));
   }
 
-  app.get('/', (req, res) => {
-    if (isWebContainerTarget) {
-      return serveContainerApp(req, res);
-    }
+  app.get('/', serveRunner);
 
-    return serveRunner(req, res);
-  });
-
-  app.get(/^\/(?!api).*/, (req, res) => {
-    if (isWebContainerTarget) {
-      return serveContainerApp(req, res);
-    }
-
+  app.get(/^\/(?!api).*/, (_req, res) => {
     return res.redirect('/');
   });
 
@@ -70,10 +48,7 @@ function createApp(options = {}) {
 
 async function start() {
   const PORT = Number.parseInt(process.env.PORT, 10) || 3000;
-
-  if (process.env.WEB_CONTAINER_TARGET === '1') {
-    await notesRepository.initDb();
-  }
+  await notesRepository.initDb();
 
   const app = createApp();
   app.listen(PORT, '0.0.0.0', () => {

@@ -20,4 +20,9 @@ test('snapshot generator includes notes frontend source and config files', async
   assert.match(generated, /"server"/);
   assert.match(generated, /"app": \{/);
   assert.match(generated, /"package\.json"/);
+  assert.match(generated, /"dist": \{/);
+  assert.match(generated, /"app\.js"/);
+  assert.match(generated, /"styles\.css"/);
+  assert.match(generated, /"index\.html"/);
+  assert.doesNotMatch(generated, /"app\.html"/);
 });

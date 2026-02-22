@@ -10,9 +10,9 @@ const requiredFiles = [
   'package-lock.json',
   'tsconfig.base.json',
   'app/package.json',
-  'public/app.html',
-  'public/app.js',
-  'public/styles.css',
+  'public/index.html',
+  'dist/app.js',
+  'dist/styles.css',
   'data/.gitkeep',
 ];
 

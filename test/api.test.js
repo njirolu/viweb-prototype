@@ -8,8 +8,7 @@ const request = require('supertest');
 const { createApp } = require('../packages/server/app');
 const notesRepository = require('../packages/server/features/notes/notes.repository');
 
-const hostApp = createApp();
-const containerApp = createApp({ webContainerTarget: true });
+const app = createApp();
 
 function notePayload(attributes) {
   return {
@@ -30,7 +29,7 @@ test.after(async () => {
 });
 
 test('GET / serves the WebContainer runner HTML with isolation headers', async () => {
-  const response = await request(hostApp).get('/').expect(200);
+  const response = await request(app).get('/').expect(200);
 
   assert.match(response.text, /data-runner-shell="react"/);
   assert.match(response.text, /WebContainer Workspace/);
@@ -38,34 +37,15 @@ test('GET / serves the WebContainer runner HTML with isolation headers', async (
   assert.equal(response.headers['cross-origin-embedder-policy'], 'require-corp');
 });
 
-test('GET /webcontainer-runner/* applies isolation headers', async () => {
-  const response = await request(hostApp).get('/webcontainer-runner/runner.js').expect(200);
+test('GET /dist/webcontainer-runner/* applies isolation headers', async () => {
+  const response = await request(app).get('/dist/webcontainer-runner/runner.js').expect(200);
 
   assert.equal(response.headers['cross-origin-opener-policy'], 'same-origin');
   assert.equal(response.headers['cross-origin-embedder-policy'], 'require-corp');
 });
 
-test('GET /api/v1/health returns 404 in host mode', async () => {
-  const response = await request(hostApp).get('/api/v1/health').expect(404);
-  assert.equal(response.body.error, 'Not found');
-});
-
-test('GET /notes-ui is not available in host mode and redirects to /', async () => {
-  const response = await request(hostApp).get('/notes-ui').expect(302);
-  assert.equal(response.headers.location, '/');
-});
-
-test('GET / serves container app in WEB_CONTAINER_TARGET mode', async () => {
-  const response = await request(containerApp).get('/').expect(200);
-
-  assert.match(response.text, /data-notes-shell="react"/);
-  assert.match(response.text, /Notes API v1 Demo/);
-  assert.equal(response.headers['cross-origin-opener-policy'], undefined);
-  assert.equal(response.headers['cross-origin-embedder-policy'], undefined);
-});
-
-test('GET /api/v1/health returns JSON:API payload in container mode', async () => {
-  const response = await request(containerApp).get('/api/v1/health').expect(200);
+test('GET /api/v1/health returns JSON:API payload', async () => {
+  const response = await request(app).get('/api/v1/health').expect(200);
 
   assert.equal(response.body.jsonapi.version, '1.0');
   assert.equal(response.body.data.type, 'health');
@@ -73,8 +53,13 @@ test('GET /api/v1/health returns JSON:API payload in container mode', async () =
   assert.ok(response.body.data.attributes.time);
 });
 
+test('GET /notes-ui redirects to /', async () => {
+  const response = await request(app).get('/notes-ui').expect(302);
+  assert.equal(response.headers.location, '/');
+});
+
 test('POST /api/v1/notes creates a note with valid payload', async () => {
-  const createResponse = await request(containerApp)
+  const createResponse = await request(app)
     .post('/api/v1/notes')
     .send(notePayload({ title: 'First note', content: 'hello' }))
     .expect(201);
@@ -83,12 +68,12 @@ test('POST /api/v1/notes creates a note with valid payload', async () => {
   assert.equal(createResponse.body.data.attributes.title, 'First note');
 
   const id = createResponse.body.data.id;
-  const getResponse = await request(containerApp).get(`/api/v1/notes/${id}`).expect(200);
+  const getResponse = await request(app).get(`/api/v1/notes/${id}`).expect(200);
   assert.equal(getResponse.body.data.id, id);
 });
 
 test('POST /api/v1/notes returns structured 400 on missing title', async () => {
-  const response = await request(containerApp)
+  const response = await request(app)
     .post('/api/v1/notes')
     .send(notePayload({ content: 'missing title' }))
     .expect(400);
@@ -100,13 +85,13 @@ test('POST /api/v1/notes returns structured 400 on missing title', async () => {
 
 test('GET /api/v1/notes supports page and limit', async () => {
   for (let i = 1; i <= 15; i += 1) {
-    await request(containerApp)
+    await request(app)
       .post('/api/v1/notes')
       .send(notePayload({ title: `Note ${i}`, content: '' }))
       .expect(201);
   }
 
-  const response = await request(containerApp)
+  const response = await request(app)
     .get('/api/v1/notes?page=2&limit=5')
     .expect(200);
 
@@ -118,17 +103,17 @@ test('GET /api/v1/notes supports page and limit', async () => {
 });
 
 test('GET /api/v1/notes supports search query filtering', async () => {
-  await request(containerApp)
+  await request(app)
     .post('/api/v1/notes')
     .send(notePayload({ title: 'Alpha', content: 'first' }))
     .expect(201);
 
-  await request(containerApp)
+  await request(app)
     .post('/api/v1/notes')
     .send(notePayload({ title: 'Beta', content: 'second' }))
     .expect(201);
 
-  const response = await request(containerApp)
+  const response = await request(app)
     .get('/api/v1/notes?search=alp')
     .expect(200);
 
@@ -137,21 +122,21 @@ test('GET /api/v1/notes supports search query filtering', async () => {
 });
 
 test('GET /api/v1/notes/:id returns 200 for existing and 404 for missing notes', async () => {
-  const createResponse = await request(containerApp)
+  const createResponse = await request(app)
     .post('/api/v1/notes')
     .send(notePayload({ title: 'Lookup me', content: '' }))
     .expect(201);
 
   const id = createResponse.body.data.id;
 
-  await request(containerApp).get(`/api/v1/notes/${id}`).expect(200);
+  await request(app).get(`/api/v1/notes/${id}`).expect(200);
 
-  const missingResponse = await request(containerApp).get('/api/v1/notes/99999').expect(404);
+  const missingResponse = await request(app).get('/api/v1/notes/99999').expect(404);
   assert.equal(missingResponse.body.errors[0].code, 'NOTE_NOT_FOUND');
 });
 
 test('PATCH /api/v1/notes/:id partially updates note and updates timestamp', async () => {
-  const createResponse = await request(containerApp)
+  const createResponse = await request(app)
     .post('/api/v1/notes')
     .send(notePayload({ title: 'Patch me', content: 'before' }))
     .expect(201);
@@ -161,7 +146,7 @@ test('PATCH /api/v1/notes/:id partially updates note and updates timestamp', asy
 
   await new Promise((resolve) => setTimeout(resolve, 5));
 
-  const patchResponse = await request(containerApp)
+  const patchResponse = await request(app)
     .patch(`/api/v1/notes/${id}`)
     .send(notePayload({ content: 'after' }))
     .expect(200);
@@ -172,20 +157,20 @@ test('PATCH /api/v1/notes/:id partially updates note and updates timestamp', asy
 });
 
 test('DELETE /api/v1/notes/:id returns 200 for existing and 404 for missing notes', async () => {
-  const createResponse = await request(containerApp)
+  const createResponse = await request(app)
     .post('/api/v1/notes')
     .send(notePayload({ title: 'Delete me', content: '' }))
     .expect(201);
 
   const id = createResponse.body.data.id;
 
-  const deleteResponse = await request(containerApp)
+  const deleteResponse = await request(app)
     .delete(`/api/v1/notes/${id}`)
     .expect(200);
 
   assert.equal(deleteResponse.body.meta.deleted, true);
 
-  const missingDeleteResponse = await request(containerApp)
+  const missingDeleteResponse = await request(app)
     .delete('/api/v1/notes/99999')
     .expect(404);
 
@@ -193,7 +178,7 @@ test('DELETE /api/v1/notes/:id returns 200 for existing and 404 for missing note
 });
 
 test('POST /api/v1/notes returns 415 for non-JSON payloads', async () => {
-  const response = await request(containerApp)
+  const response = await request(app)
     .post('/api/v1/notes')
     .set('Content-Type', 'text/plain')
     .send('plain-text-body')
@@ -203,6 +188,6 @@ test('POST /api/v1/notes returns 415 for non-JSON payloads', async () => {
 });
 
 test('GET /api/v1/notes/:id returns 400 for invalid id format', async () => {
-  const response = await request(containerApp).get('/api/v1/notes/not-a-number').expect(400);
+  const response = await request(app).get('/api/v1/notes/not-a-number').expect(400);
   assert.equal(response.body.errors[0].code, 'INVALID_NOTE_ID');
 });

@@ -18,7 +18,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(workspaceDir, '..', 'public', 'webcontainer-runner'),
+    outDir: path.resolve(workspaceDir, '..', 'dist', 'webcontainer-runner'),
     emptyOutDir: true,
     cssCodeSplit: false,
     target: 'esnext',

@@ -1,6 +1,6 @@
 # be-wasm
 
-Container-only notes app: frontend + backend berjalan di dalam WebContainer preview.
+WebContainer runner + notes app dalam monorepo npm workspaces.
 
 Frontend stack:
 - `app`: Vite + React + TypeScript + Tailwind + shadcn (runner UI)
@@ -14,26 +14,21 @@ Workspace layout:
 
 ## Arsitektur
 
-- Host server (`npm run dev`) hanya sebagai launcher runner.
-- App bisnis (UI notes + REST API + DB) hanya aktif saat `WEB_CONTAINER_TARGET=1` di dalam WebContainer.
-- Host tidak mengekspos direct UI app atau API bisnis.
+- `GET /` selalu menampilkan runner shell dari `public/index.html`.
+- API `/api/v1/*` selalu aktif di server.
+- Frontend bisnis notes tetap dibuka dari preview iframe WebContainer (Vite dev server port `4173`).
 
-## Host Routes (non-container)
+## Runtime Routes
 
-- `GET /` -> halaman WebContainer runner
-- `GET /webcontainer-runner/*` -> asset runner
-- `GET /api/v1/*` -> `404 Not Found` (disabled di host)
-- Semua route non-API lain -> redirect ke `/`
-
-## Container Runtime Routes (`WEB_CONTAINER_TARGET=1`)
-
-- `GET /` -> UI notes app
+- `GET /` -> halaman WebContainer runner (single shell)
+- `GET /dist/webcontainer-runner/*` -> asset runner
 - `GET /api/v1/health`
 - `GET /api/v1/notes?page=1&limit=10&search=keyword`
 - `GET /api/v1/notes/:id`
 - `POST /api/v1/notes`
 - `PATCH /api/v1/notes/:id`
 - `DELETE /api/v1/notes/:id`
+- Semua route non-API lain -> redirect ke `/`
 
 ## Menjalankan Lokal
 
@@ -67,10 +62,12 @@ npm run build:runner
 
 Perintah ini akan:
 
-- rebuild `public/app.js` + `public/styles.css` (Notes React bundle)
+- rebuild `dist/app.js` + `dist/styles.css` (Notes React bundle)
 - regenerate `app/src/generated-files.ts`
-- rebuild `public/webcontainer-runner/runner.js`
-- rebuild `public/webcontainer-runner/runner.css`
+- rebuild `dist/webcontainer-runner/runner.js`
+- rebuild `dist/webcontainer-runner/runner.css`
+
+`public/` dipakai sebagai source template HTML (`index.html`), sedangkan hasil build runtime berada di `dist/`.
 
 ## Browser Requirements
 
@@ -104,3 +101,5 @@ Perintah ini akan:
 ```bash
 npm test
 ```
+
+`npm test` otomatis menjalankan build dependency frontend (`pretest`) agar test tetap valid saat `dist/` tidak di-commit.

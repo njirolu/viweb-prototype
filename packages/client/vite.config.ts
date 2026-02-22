@@ -26,7 +26,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(workspaceDir, '..', '..', 'public'),
+    outDir: path.resolve(workspaceDir, '..', '..', 'dist'),
     emptyOutDir: false,
     cssCodeSplit: false,
     target: 'esnext',

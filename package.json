@@ -13,6 +13,7 @@
     "dev:container:api": "npm run dev:container -w @viweb/server",
     "dev:container:notes": "npm run dev:container -w @viweb/client",
     "dev:container": "concurrently -k -n api,notes \"npm run dev:container:api\" \"npm run dev:container:notes\"",
+    "pretest": "npm run build:notes && npm run build:runner-ui",
     "test": "node --test",
     "build:notes": "npm run build -w @viweb/client",
     "build:snapshot": "npm run generate:snapshot -w @viweb/app",
