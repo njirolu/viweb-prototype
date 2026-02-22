@@ -552,15 +552,22 @@ export function useRunnerState() {
 
     writeTerminalLine('[runner] terminal ready');
 
-    const onWindowResize = () => {
+    const onResize = () => {
       runtime.fitAddon?.fit();
       resizeTerminalProcesses();
     };
 
-    window.addEventListener('resize', onWindowResize);
+    window.addEventListener('resize', onResize);
+
+    // Also observe the container itself so split-panel resizes trigger a fit
+    const resizeObserver = new ResizeObserver(() => {
+      onResize();
+    });
+    resizeObserver.observe(container);
 
     return () => {
-      window.removeEventListener('resize', onWindowResize);
+      window.removeEventListener('resize', onResize);
+      resizeObserver.disconnect();
       runtime.terminalDispose?.();
       runtime.terminal = undefined;
       runtime.fitAddon = undefined;
